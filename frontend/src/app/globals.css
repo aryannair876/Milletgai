@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  /* Earth-Inspired Palette (Agri-Tech) */
+  --color-deep-green: #1a4d2e;
+  --color-olive: #4f6f52;
+  --color-sage: #e9edc9;
+  --color-beige: #f5f1e8;
+  --color-charcoal: #2d3436;
+  --color-muted-brown: #8d6e63;
+  --color-white: #ffffff;
+  --color-soft-gray: #f8f9fa;
+
+  --background: var(--color-soft-gray);
+  --foreground: var(--color-charcoal);
+  --primary: var(--color-deep-green);
+  --secondary: var(--color-olive);
+  --accent: var(--color-muted-brown);
+}
+
+@theme inline {
+  --color-deep-green: var(--color-deep-green);
+  --color-olive: var(--color-olive);
+  --color-sage: var(--color-sage);
+  --color-beige: var(--color-beige);
+  --color-charcoal: var(--color-charcoal);
+  --color-muted-brown: var(--color-muted-brown);
+  --color-white: var(--color-white);
+  --color-soft-gray: var(--color-soft-gray);
+
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-olive);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+/* Prose styles for markdown rendering */
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+.prose p {
+  margin: 0.5rem 0;
+}
+
+.prose h2,
+.prose h3 {
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem 0;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--color-deep-green);
+}
