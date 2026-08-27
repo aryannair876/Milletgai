@@ -246,8 +246,8 @@ class MilletDataAugmenter:
         print("\n✅ Data augmentation complete!")
         print(f"Original dataset: {self.input_file}")
         print(f"Augmented dataset: {self.output_file}")
-        print(f"\nTo use augmented data for training, update src/training/sft_train_windows.py:")
-        print(f'  dataset_path: "data/millets_data_cleaned.jsonl" → "data/millets_data_augmented.jsonl"')
+        print(f"\nTo use augmented data for training, update DATASET_PATH in train_sft.py:")
+        print(f'  DATASET_PATH: "data/millets_data_final.jsonl" → "data/millets_data_augmented.jsonl"')
 
 
 def main():

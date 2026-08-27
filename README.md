@@ -1,5 +1,10 @@
 # 🌾 MilletsGAI — AI-Powered Millet Knowledge Assistant
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![Model: Llama 3 8B](https://img.shields.io/badge/model-Llama%203%208B-orange.svg)](https://llama.meta.com/llama3/)
+
 **MilletsGAI** is an AI assistant that provides accurate, grounded information about Indian millets — covering nutrition, cultivation, recipes, health benefits, pest management, and market data. It combines a **fine-tuned Llama 3 8B model** with **Retrieval-Augmented Generation (RAG)** for factual, hallucination-resistant responses.
 
 ---
@@ -12,7 +17,7 @@
 - **Smart Post-processing** — Cleans OCR artifacts, metadata leakage, and training artifacts from responses
 - **Modern Web UI** — Next.js frontend with chat interface, confidence meters, and citation display
 - **FastAPI Backend** — REST API with Fast/Thinking modes and model switching
-- **Comprehensive Training Pipeline** — End-to-end scripts for data processing, SFT, and DPO training
+- **Reproducible Training Pipeline** — End-to-end scripts for data processing, SFT, and DPO
 
 ---
 
@@ -39,7 +44,7 @@ User Question
 │  RAG Inference Engine           │
 │  - rag_inference.py             │
 │                                 │
-│  1. Embed query (MiniLM-L6-v2) │
+│  1. Embed query (MiniLM-L6-v2)  │
 │  2. Semantic search (ChromaDB)  │
 │  3. Build augmented prompt      │
 │  4. Generate (Llama 3 + LoRA)   │
@@ -56,6 +61,8 @@ User Question
 - **NVIDIA GPU** with 8GB+ VRAM (for model inference)
 - **CUDA 11.8+**
 - ~20GB disk space for model weights
+
+> Developed and tested on an RTX 4060 (8GB). Training configs are tuned for that VRAM budget.
 
 ---
 
@@ -80,12 +87,14 @@ pip install -r requirements.txt
 
 ### 3. Download Model Weights
 
-Download the following and place them in the project root:
+Model weights are **not** included in this repository. Download them and place as follows:
 
 | What | Where to Place | Source |
 |---|---|---|
 | **Llama 3 8B Instruct** | `Meta-Llama-3-8B-Instruct/` | [Meta on HuggingFace](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
-| **MilletsGAI LoRA Adapter** | `models/milletsgai-dpo/` | *(trained locally — see Training section)* |
+| **MilletsGAI LoRA Adapter** | `models/milletsgai-dpo/` | *(trained locally — see [Training](#-training-your-own-model))* |
+
+> Access to the base model requires accepting Meta's license on HuggingFace.
 
 ### 4. Build the Knowledge Base
 
@@ -100,6 +109,7 @@ This creates the `chroma_db/` vector database from the training data.
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local   # adjust NEXT_PUBLIC_API_URL if your backend isn't on :8000
 cd ..
 ```
 
@@ -124,6 +134,14 @@ npm run dev
 
 The Next.js app starts on `http://localhost:3000`.
 
+### Query From the Command Line
+
+You can also query the RAG engine directly, without the web stack:
+
+```bash
+python rag_inference.py "What is the protein content of finger millet?"
+```
+
 ---
 
 ## 📁 Project Structure
@@ -131,44 +149,41 @@ The Next.js app starts on `http://localhost:3000`.
 ```
 milletai/
 ├── backend_api.py                 # FastAPI REST API server
-├── rag_inference.py               # Core RAG + LLM inference engine
+├── rag_inference.py               # Core RAG + LLM inference engine (also a CLI)
 ├── ingest_data.py                 # ChromaDB knowledge base builder
+├── train_sft.py                   # Stage 1: Supervised Fine-Tuning
+├── train_dpo_only.py              # Stage 2: Direct Preference Optimization
 ├── requirements.txt               # Python dependencies
-├── accelerate_config.yaml         # HuggingFace Accelerate config
-├── __init__.py
-│
-├── train_sft.py                   # Supervised Fine-Tuning script
-├── train_dpo_only.py              # Direct Preference Optimization script
+├── LICENSE                        # MIT (code only — see note on model weights)
 │
 ├── data/
-│   ├── millets_data_final.jsonl   # Training dataset (instruction-output pairs)
+│   ├── millets_data_final.jsonl   # SFT dataset (instruction–output pairs)
 │   ├── millets_dpo_final.jsonl    # DPO preference dataset
 │   └── evaluation_questions.json  # Evaluation question set
 │
 ├── src/
-│   ├── data_processing/
-│   │   ├── augment_dataset.py     # Data augmentation utilities
-│   │   └── make_instruction_dataset.py  # Dataset creation from raw data
-│   └── training/
-│       ├── sft_train.py           # SFT training module
-│       └── sft_train_windows.py   # Windows-compatible training
+│   └── data_processing/
+│       ├── make_instruction_dataset.py  # Build instruction dataset from raw sources
+│       └── augment_dataset.py           # Data augmentation utilities
 │
 ├── frontend/                      # Next.js web application
 │   ├── src/
 │   │   ├── app/                   # Next.js app router pages
 │   │   ├── components/            # React UI components
 │   │   └── lib/                   # Utility functions
-│   ├── package.json
-│   └── ...
+│   ├── .env.example               # Frontend configuration template
+│   └── package.json
 │
-├── Meta-Llama-3-8B-Instruct/     # [GITIGNORED] Base model weights
-├── models/                        # [GITIGNORED] Fine-tuned adapters
-└── chroma_db/                     # [GITIGNORED] Vector database
+├── Meta-Llama-3-8B-Instruct/      # [not in repo] Base model weights
+├── models/                        # [not in repo] Fine-tuned LoRA adapters
+└── chroma_db/                     # [not in repo] Vector database (built by ingest_data.py)
 ```
 
 ---
 
 ## 🧠 Training Your Own Model
+
+The pipeline runs in three stages:
 
 ### Step 1: Prepare Dataset
 
@@ -182,13 +197,15 @@ python src/data_processing/make_instruction_dataset.py
 python train_sft.py
 ```
 
+Saves a LoRA adapter to `models/milletsgai-final/`.
+
 ### Step 3: Direct Preference Optimization (DPO)
 
 ```bash
 python train_dpo_only.py
 ```
 
-The trained adapter will be saved to `models/milletsgai-dpo/`.
+Loads the SFT adapter and applies preference tuning. The final adapter is saved to `models/milletsgai-dpo/` — this is what `rag_inference.py` loads at runtime.
 
 ---
 
@@ -205,7 +222,32 @@ The trained adapter will be saved to `models/milletsgai-dpo/`.
 
 ---
 
+## 📚 Citation
+
+This work was presented as:
+
+> **MilletsGAI: An LLM for the Indian Millet Ecosystem**
+> Aryan Nair, Khushi Thakur, Subham Dey
+> International Conference on Emerging Methodologies in Computing, Sciences and Informatics (ICEMCSI 2026),
+> New Horizon College of Engineering, Bengaluru, India.
+
+```bibtex
+@inproceedings{nair2026milletsgai,
+  title     = {MilletsGAI: An LLM for the Indian Millet Ecosystem},
+  author    = {Nair, Aryan and Thakur, Khushi and Dey, Subham},
+  booktitle = {Proceedings of the International Conference on Emerging Methodologies
+               in Computing, Sciences and Informatics (ICEMCSI)},
+  year      = {2026},
+  address   = {Bengaluru, India}
+}
+```
+
+---
+
 ## 📄 License
 
-This project is for educational and research purposes.  
-The base Llama 3 model is subject to the [Meta Llama 3 Community License](https://llama.meta.com/llama3/license/).
+Source code in this repository is released under the [MIT License](LICENSE).
+
+The **Meta Llama 3 8B** base model — and any adapter fine-tuned from it — remains subject to the
+[Meta Llama 3 Community License](https://llama.meta.com/llama3/license/). Obtain the base weights
+directly from Meta or HuggingFace and accept their terms before use.

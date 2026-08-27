@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Send, ArrowLeft, Bot, User, Loader2, Sprout, Utensils, Activity, Bug, Warehouse, CloudSun, TrendingUp, Cpu, ChevronDown, ChevronUp, Brain, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
+// Backend API location. Override via NEXT_PUBLIC_API_URL in .env.local.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
 interface ChatViewProps {
     context: string;
     theme?: string;
@@ -70,7 +73,7 @@ export function ChatView({ context, theme = "gray", initialQuery, onBack, initia
 
     const fetchResponse = async (query: string) => {
         try {
-            const res = await fetch("http://localhost:8000/chat", {
+            const res = await fetch(`${API_BASE_URL}/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: query, context: context, mode: mode })

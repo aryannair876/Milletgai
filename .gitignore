@@ -63,3 +63,24 @@ desktop.ini
 .env
 .env.local
 .env.*.local
+
+# ----- Academic / Conference Material -----
+# Paper drafts, camera-ready files, reviewer responses, slide decks.
+# These live outside the repo (see ../milletai-paper/) and must never be committed.
+*.docx
+*.pptx
+*.pdf
+paper-archive/
+_deck_preview*/
+_paper_media/
+_v2_media/
+
+# Scratch scripts & text dumps from paper/deck authoring
+_*.py
+_*.txt
+build_deck.py
+!__init__.py
+
+# ----- Agent / Tooling Config -----
+.kilo/
+.claude/

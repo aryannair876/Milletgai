@@ -201,7 +201,8 @@ def train():
     
     print(f"\n✅ Done! Model saved to: {OUTPUT_DIR}")
     print("\nNext steps:")
-    print("  python simple_chat.py")
+    print("  python train_dpo_only.py       # preference tuning on top of this checkpoint")
+    print("  python rag_inference.py \"...\"  # query the model directly")
 
 if __name__ == "__main__":
     try:

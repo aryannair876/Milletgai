@@ -1,7 +1,7 @@
 """
 DPO-Only Training Script for MilletGAI
 =======================================
-Run this AFTER train_fast.py completes to add preference tuning.
+Run this AFTER train_sft.py completes to add preference tuning.
 Loads the existing SFT model and applies DPO for better alignment.
 
 Memory-optimized for RTX 4060 8GB.
@@ -47,13 +47,10 @@ print("=" * 60)
 # =============================================================================
 
 MODEL_NAME = "Meta-Llama-3-8B-Instruct"
-SFT_MODEL_PATH = "models/milletsgai-final"  # Load the SFT model from train_fast.py
+SFT_MODEL_PATH = "models/milletsgai-final"  # Load the SFT model produced by train_sft.py
 
-# DATASET OPTIONS (both work well with memory fix):
-# Option 1: Curated optimal - 970 examples, ~45 min, balanced millets & diverse rejection types (RECOMMENDED)
-# Option 2: Full clean dataset - 3937 examples, ~3 hours, but 90% same rejection pattern
-DPO_DATASET_PATH = "data/millets_dpo_final_v2.jsonl"  # Final: CoT + diverse rejections (verified)
-# DPO_DATASET_PATH = "data/millets_dpo_v2.jsonl"  # 80 pairs (smaller)
+# Preference pairs: CoT responses as "chosen", diverse rejection types as "rejected".
+DPO_DATASET_PATH = "data/millets_dpo_final.jsonl"
 
 OUTPUT_DIR = "models/milletsgai-dpo"
 
@@ -335,7 +332,9 @@ def main():
         print(f"\n✅ SUCCESS! DPO training complete!")
         print(f"   Model saved to: {OUTPUT_DIR}")
         print(f"\nNext steps:")
-        print(f"   python simple_chat.py --model {OUTPUT_DIR}")
+        print(f"   python ingest_data.py          # build the RAG knowledge base")
+        print(f"   python rag_inference.py \"...\"  # query the model directly")
+        print(f"   python backend_api.py          # serve the API on :8000")
         
     except KeyboardInterrupt:
         print("\n\n⚠️ Training interrupted by user")
